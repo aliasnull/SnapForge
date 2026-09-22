@@ -5,6 +5,7 @@ dist-ssr
 *.local
 .vite
 *.log
+test-image.png
 npm-debug.log*
 .idea
 .vscode/*

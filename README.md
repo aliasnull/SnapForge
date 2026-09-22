@@ -137,6 +137,28 @@ it ships.
 npm run build && npm run audit
 ```
 
+### Browser checks
+
+Three checks drive the real app in a real Chromium over the DevTools Protocol,
+because a route that renders is not the same as a tool that works. They need a
+Chromium on `PATH` (override with `CHROME_BIN`) and a running server — the dev
+server or a deployed URL.
+
+```bash
+npm run test:image                                    # writes a 12 MP test-image.png
+npm run test:routes  -- http://localhost:5173         # every route renders without throwing
+npm run test:e2e     -- http://localhost:5173 test-image.png   # an image through each tool, end to end
+npm run test:loading -- http://localhost:5173 test-image.png   # the decode state is safe and temporary
+```
+
+`test:loading` exists because of a bug that shipped: choosing a file briefly
+leaves the source with `status: 'loading'` and `meta: null`, and the tools fell
+through to `source.meta!` and crashed the screen. `test:e2e` could not catch it —
+it waits for the decode to settle, so it passed either way. The loading check
+samples the DOM from inside the page while the decode is in flight, under CPU
+throttling so the window is wide enough to observe, and asserts that the state
+was reached, that nothing crashed, and that the tool came back out of it.
+
 ## Known limitations
 
 - **Format support follows the browser.** WebP and AVIF encoding depend on

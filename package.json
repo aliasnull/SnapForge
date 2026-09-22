@@ -13,6 +13,10 @@
     "typecheck": "tsc --noEmit",
     "icons": "node scripts/generate-icons.mjs",
     "audit": "node scripts/audit-bundle.mjs",
+    "test:image": "node scripts/make-test-image.mjs",
+    "test:routes": "node scripts/route-check.mjs",
+    "test:e2e": "node scripts/e2e-check.mjs",
+    "test:loading": "node scripts/loading-check.mjs",
     "android:build": "bash scripts/android-build.sh"
   },
   "dependencies": {
