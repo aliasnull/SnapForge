@@ -1,0 +1,80 @@
+# Build SnapForge and publish the static bundle to GitHub Pages.
+#
+# There is no server step: the workflow runs `vite build` and uploads the
+# resulting `dist/` directory as a Pages artifact. Nothing is deployed that
+# could receive an image.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Lets you re-run a deployment from the Actions tab without pushing.
+  workflow_dispatch:
+
+# Least privilege: only what the Pages deployment needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time. Queued runs are kept rather than cancelled so a
+# push made mid-deploy still ships.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Build
+        # VITE_CANONICAL_ORIGIN is optional. Set it as a repository variable if
+        # you deploy to a custom domain; leave it unset for *.github.io, where
+        # the app omits the canonical link rather than guessing a URL.
+        env:
+          VITE_GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}
+          VITE_CANONICAL_ORIGIN: ${{ vars.CANONICAL_ORIGIN }}
+        run: npm run build
+
+      - name: Audit the bundle
+        # Fails if the built output contains an upload primitive, a credential,
+        # an unexpected external host, or placeholder text. The privacy promise
+        # is the product, so it is checked on every deploy rather than trusted.
+        run: npm run audit
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
