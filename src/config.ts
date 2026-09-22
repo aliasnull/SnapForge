@@ -19,7 +19,15 @@ const envUrl =
 export const GITHUB_URL = (envUrl ?? '').trim();
 export const HAS_GITHUB_URL = GITHUB_URL.length > 0;
 
-/** Canonical origin used for the Open Graph tags; empty means "use current URL". */
+/**
+ * The deployed URL of the app, path included — e.g.
+ * `https://user.github.io/repo/`. Empty means "not deployed anywhere known",
+ * in which case the canonical link is omitted rather than guessed.
+ *
+ * This is a *full URL*, not an origin: it is used verbatim as the canonical
+ * href and as the base for absolute `og:image` tags, so a project site on a
+ * subpath needs the subpath here.
+ */
 export const CANONICAL_ORIGIN = (
   (typeof import.meta !== 'undefined' && import.meta.env
     ? (import.meta.env.VITE_CANONICAL_ORIGIN as string | undefined)

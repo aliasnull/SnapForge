@@ -140,14 +140,31 @@ function NotFound() {
  * The canonical URL is only meaningful once the site is deployed somewhere
  * known, so it is injected here — from `VITE_CANONICAL_ORIGIN` at build time —
  * rather than hard-coded in `index.html` where it would have to be a guess.
- * Hash routes all resolve to the same document, so the canonical is the origin
- * plus the base path, with the fragment dropped.
+ *
+ * The configured value is expected to be the full deployed URL, path included
+ * (`https://user.github.io/repo/`). It is *not* combined with
+ * `import.meta.env.BASE_URL`: that is `'./'`, which is right for asset
+ * resolution but would turn a valid origin into `https://user.github.io/repo./`
+ * — a path that does not exist.
+ *
+ * Hash routes all resolve to the same document, so the fragment is dropped and
+ * every route shares one canonical URL.
  */
 function useCanonicalLink() {
   useEffect(() => {
     if (!CANONICAL_ORIGIN) return;
 
-    const href = `${CANONICAL_ORIGIN.replace(/\/$/, '')}${import.meta.env.BASE_URL}`;
+    let href: string;
+    try {
+      const url = new URL(CANONICAL_ORIGIN);
+      url.hash = '';
+      href = url.href;
+    } catch {
+      // A misconfigured variable must not take the app down. Skip the tag
+      // rather than emit a canonical pointing somewhere wrong.
+      return;
+    }
+
     let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (!link) {
       link = document.createElement('link');
