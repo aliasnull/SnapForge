@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#08090c" />
+
+    <title>SnapForge - Private Browser Image Tools</title>
+    <meta
+      name="description"
+      content="Resize, compress, convert, crop and rotate images directly in your browser. No uploads, no accounts, no waiting. Your images never leave your device."
+    />
+    <meta name="author" content="SnapForge" />
+    <meta
+      name="keywords"
+      content="image compressor, image resizer, image converter, crop image, webp converter, browser image tools, private image editor"
+    />
+    <meta name="robots" content="index, follow" />
+    <!--
+      No <link rel="canonical"> here on purpose. The correct canonical URL is the
+      deployed origin, which is not known at author time — and inventing one
+      would point crawlers at a domain that may not exist. `src/App.tsx` injects
+      the tag at runtime when VITE_CANONICAL_ORIGIN is configured at build time.
+    -->
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SnapForge" />
+    <meta property="og:title" content="SnapForge - Private Browser Image Tools" />
+    <meta
+      property="og:description"
+      content="Resize, compress, convert and edit images directly in your browser. No uploads. No accounts. No waiting."
+    />
+    <meta property="og:image" content="./og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SnapForge — Fast. Private. In Your Browser." />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SnapForge - Private Browser Image Tools" />
+    <meta
+      name="twitter:description"
+      content="Resize, compress, convert and edit images directly in your browser. No uploads. No accounts. No waiting."
+    />
+    <meta name="twitter:image" content="./og-image.png" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="alternate icon" type="image/png" sizes="32x32" href="./icons/icon-32.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+
+    <style>
+      /* First-paint background so a dark-mode user never sees a white flash. */
+      html {
+        background: #08090c;
+      }
+      html[data-theme='light'] {
+        background: #f7f8fb;
+      }
+      #root:empty::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(600px 300px at 50% 40%, rgba(79, 124, 255, 0.12), transparent 70%),
+          transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="max-width: 640px; margin: 15vh auto; padding: 24px; font-family: system-ui, sans-serif; color: #eef1f7; text-align: center">
+        <h1 style="font-size: 1.5rem; margin-bottom: 12px">SnapForge needs JavaScript</h1>
+        <p style="color: #9aa3b5; line-height: 1.6">
+          Every image operation in SnapForge runs inside your browser, which means JavaScript has to
+          be enabled. Nothing is uploaded either way — enabling it does not send your files
+          anywhere.
+        </p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

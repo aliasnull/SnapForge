@@ -1,0 +1,29 @@
+{
+  "name": "snapforge",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SnapForge - Fast. Private. In Your Browser. A fully client-side image toolkit.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:only": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "icons": "node scripts/generate-icons.mjs",
+    "audit": "node scripts/audit-bundle.mjs",
+    "android:build": "bash scripts/android-build.sh"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.0"
+  }
+}

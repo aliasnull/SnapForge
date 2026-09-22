@@ -1,0 +1,8 @@
+# SnapForge is a fully static, fully client-side app. There is nothing to
+# crawl beyond the single page, and no server-side routes exist.
+
+User-agent: *
+Allow: /
+
+# No sitemap: every route is a hash fragment (#/compress), which crawlers treat
+# as part of the same document. A sitemap would list one URL and nothing else.
