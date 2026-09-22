@@ -57,6 +57,13 @@ jobs:
         # Fails if the built output contains an upload primitive, a credential,
         # an unexpected external host, or placeholder text. The privacy promise
         # is the product, so it is checked on every deploy rather than trusted.
+        #
+        # The same variables are passed here as to the build: the audit allows
+        # the hosts those variables name and nothing else, so it has to know
+        # what the build was told.
+        env:
+          VITE_GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}
+          VITE_CANONICAL_ORIGIN: ${{ vars.CANONICAL_ORIGIN }}
         run: npm run audit
 
       - name: Configure Pages

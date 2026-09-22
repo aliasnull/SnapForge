@@ -143,13 +143,58 @@ for (const [pattern, label] of [
 }
 pass('no credentials or key material in the build output');
 
-// A remote origin other than the React error-docs link would mean the app is
+// A remote origin other than the ones listed here would mean the app is
 // talking to something at runtime.
-const allowedHosts = new Set(['react.dev', 'www.w3.org']);
-const urls = [...bundle.matchAll(/https?:\/\/([a-zA-Z0-9.-]+)/g)].map((match) => match[1]);
-const unexpected = [...new Set(urls)].filter((host) => !allowedHosts.has(host));
-if (unexpected.length > 0) fail(`unexpected external host(s): ${unexpected.join(', ')}`);
-else pass('no external hosts beyond the React error-docs link and SVG namespaces');
+//
+// Two hosts are legitimate and both are accounted for rather than hard-coded:
+//
+//   react.dev    the error-docs link React puts in its minified error messages
+//   www.w3.org   XML namespace identifiers, which are names, not addresses
+//
+// The build may also deliberately embed a repository URL (the footer's GitHub
+// link, set from VITE_GITHUB_URL) and a canonical origin. Those are *data the
+// app displays*, never something it fetches, so they are allowed only when the
+// corresponding variable was actually set for this build — and only for the
+// exact host it names. A hard-coded allow-list would silently keep passing if
+// someone later added an unrelated endpoint.
+const NAMESPACE_HOSTS = new Set(['react.dev', 'www.w3.org']);
+
+const configuredHosts = new Set();
+for (const variable of ['VITE_GITHUB_URL', 'VITE_CANONICAL_ORIGIN']) {
+  const value = (process.env[variable] ?? '').trim();
+  if (!value) continue;
+  try {
+    configuredHosts.add(new URL(value).hostname);
+  } catch {
+    fail(`${variable} is set to something that is not a URL: ${JSON.stringify(value)}`);
+  }
+}
+
+const allowedHosts = new Set([...NAMESPACE_HOSTS, ...configuredHosts]);
+
+function hostsIn(code) {
+  return [...new Set([...code.matchAll(/https?:\/\/([a-zA-Z0-9.-]+)/g)].map((match) => match[1]))];
+}
+
+const unexpected = hostsIn(bundle).filter((host) => !allowedHosts.has(host));
+if (unexpected.length > 0) {
+  fail(`unexpected external host(s) in the build output: ${unexpected.join(', ')}`);
+} else if (configuredHosts.size > 0) {
+  pass(
+    `external hosts limited to namespaces plus the configured ${[...configuredHosts].join(', ')}`,
+  );
+} else {
+  pass('no external hosts beyond the React error-docs link and SVG namespaces');
+}
+
+// The configured repository URL must be exactly the one that was asked for —
+// a typo'd or truncated URL would ship a footer link to the wrong place.
+const githubUrl = (process.env.VITE_GITHUB_URL ?? '').trim();
+if (githubUrl && !bundle.includes(githubUrl)) {
+  fail(`VITE_GITHUB_URL was set but ${JSON.stringify(githubUrl)} does not appear in the bundle`);
+} else if (githubUrl) {
+  pass(`the configured repository URL is present verbatim`);
+}
 
 /* ------------------------------------------------------------ shipped assets */
 
