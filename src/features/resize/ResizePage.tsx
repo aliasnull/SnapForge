@@ -12,6 +12,7 @@ import { ResultPanel } from '../../components/ResultPanel';
 import { ImageMetaPanel } from '../../components/ImageMetaPanel';
 import { FormatSelect } from '../../components/FormatSelect';
 import { SourceWarning, ToolError, ToolFooter, ToolLayout } from '../../components/ToolLayout';
+import { ToolLoading } from '../../components/ToolLoading';
 import { Button, Callout, NumberInput, RangeField, Segmented, Switch } from '../../components/ui';
 import { useImageSource } from '../../hooks/useImageSource';
 import { useToolController } from '../../hooks/useToolController';
@@ -201,8 +202,22 @@ export function ResizePage() {
     );
   }
 
+  // See the note in CompressPage: `meta` is null until the decode resolves, and
+  // the lines below this guard read it.
+  if (source.status === 'loading') {
+    return (
+      <ToolLoading
+        icon="resize"
+        title="Image Resizer"
+        description="Change the pixel dimensions of an image."
+        dropTitle="Drop an image to resize"
+        onFiles={onFiles}
+      />
+    );
+  }
+
   const meta = source.meta!;
-  const busy = source.status === 'loading' || tool.state.phase === 'processing';
+  const busy = tool.state.phase === 'processing';
   const isUpscale = target.width > meta.width || target.height > meta.height;
 
   return (
@@ -422,7 +437,7 @@ export function ResizePage() {
                   <div className="stage__busy">
                     <div className="stage__busy-inner">
                       <span className="spinner spinner--lg" />
-                      <span>{source.status === 'loading' ? 'Opening image…' : 'Resizing…'}</span>
+                      <span>Resizing…</span>
                     </div>
                   </div>
                 ) : null}

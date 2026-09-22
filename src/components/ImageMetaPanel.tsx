@@ -19,7 +19,14 @@ export function formatLabel(mime: string): string {
 }
 
 interface ImageMetaPanelProps {
-  meta: ImageMeta;
+  /**
+   * Nullable on purpose. Every caller is expected to have handled the
+   * `'loading'` and `'error'` source states before rendering this panel, but a
+   * missed guard here used to dereference null and take the whole tool down via
+   * the error boundary. Accepting null means the worst case is a panel that
+   * renders nothing instead of a screen that says "Something went wrong".
+   */
+  meta: ImageMeta | null | undefined;
   /** Optional second column describing the processed output. */
   output?: {
     name: string;
@@ -32,6 +39,8 @@ interface ImageMetaPanelProps {
 }
 
 export function ImageMetaPanel({ meta, output, title = 'Image details' }: ImageMetaPanelProps) {
+  if (!meta) return null;
+
   const rows: { label: string; value: string; title?: string }[] = [
     { label: 'Filename', value: meta.name },
     { label: 'Format', value: formatLabel(meta.detectedType || meta.type) },

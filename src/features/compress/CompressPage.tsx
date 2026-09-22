@@ -12,6 +12,7 @@ import { ResultPanel } from '../../components/ResultPanel';
 import { ImageMetaPanel } from '../../components/ImageMetaPanel';
 import { FormatSelect } from '../../components/FormatSelect';
 import { SourceWarning, ToolError, ToolFooter, ToolLayout } from '../../components/ToolLayout';
+import { ToolLoading } from '../../components/ToolLoading';
 import { Button, Callout, RangeField, Segmented } from '../../components/ui';
 import { Icon } from '../../components/Icon';
 import { useImageSource } from '../../hooks/useImageSource';
@@ -175,7 +176,25 @@ export function CompressPage() {
     );
   }
 
-  const busy = source.status === 'loading' || tool.state.phase === 'processing';
+  /* -------------------------------------------------------------- loading */
+  // `select()` reports 'loading' with `meta` still null while the file decodes.
+  // Everything below this point reads `source.meta`, so this guard has to come
+  // first — without it the meta panel dereferences null and the error boundary
+  // replaces the whole tool.
+  if (source.status === 'loading') {
+    return (
+      <ToolLoading
+        icon="compress"
+        title="Image Compressor"
+        description="Reduce file size while keeping the image looking right."
+        dropTitle="Drop an image to compress"
+        onFiles={onFiles}
+      />
+    );
+  }
+
+  const meta = source.meta!;
+  const busy = tool.state.phase === 'processing';
 
   return (
     <div className="page container">
@@ -202,8 +221,8 @@ export function CompressPage() {
       >
         <SourceWarning
           largeFile={source.largeFile}
-          width={source.meta?.width ?? 0}
-          height={source.meta?.height ?? 0}
+          width={meta.width}
+          height={meta.height}
         />
 
         <div className="workspace" style={{ marginTop: 'var(--s-5)' }}>
@@ -280,7 +299,7 @@ export function CompressPage() {
             </div>
 
             <ImageMetaPanel
-              meta={source.meta!}
+              meta={meta}
               output={tool.state.output}
               title="Source image"
             />
@@ -295,7 +314,7 @@ export function CompressPage() {
                   afterUrl={outputUrl}
                   beforeLabel="Original"
                   afterLabel="Compressed"
-                  beforeMeta={formatBytes(source.meta!.size)}
+                  beforeMeta={formatBytes(meta.size)}
                   afterMeta={formatBytes(tool.state.output!.size)}
                 />
 
@@ -309,7 +328,7 @@ export function CompressPage() {
                 <ResultPanel
                   output={tool.state.output!}
                   blob={tool.state.blob}
-                  originalSize={source.meta!.size}
+                  originalSize={meta.size}
                   {...(tool.state.durationMs !== null ? { durationMs: tool.state.durationMs } : {})}
                 />
               </>
@@ -322,19 +341,17 @@ export function CompressPage() {
                   <div className="stage__busy">
                     <div className="stage__busy-inner">
                       <span className="spinner spinner--lg" />
-                      <span>
-                        {source.status === 'loading' ? 'Opening image…' : 'Compressing…'}
-                      </span>
+                      <span>Compressing…</span>
                     </div>
                   </div>
                 ) : null}
               </div>
             )}
 
-            {tool.state.phase === 'selected' && source.meta ? (
+            {tool.state.phase === 'selected' ? (
               <Callout tone="info" title="Ready when you are">
-                {formatDimensions(source.meta.width, source.meta.height)} ·{' '}
-                {formatBytes(source.meta.size)}. Press <strong>Compress image</strong> to see the
+                {formatDimensions(meta.width, meta.height)} ·{' '}
+                {formatBytes(meta.size)}. Press <strong>Compress image</strong> to see the
                 result.
               </Callout>
             ) : null}

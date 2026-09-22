@@ -13,6 +13,7 @@ import { ResultPanel } from '../../components/ResultPanel';
 import { ImageMetaPanel, formatLabel } from '../../components/ImageMetaPanel';
 import { FormatSelect, FORMAT_NOTE } from '../../components/FormatSelect';
 import { SourceWarning, ToolError, ToolFooter, ToolLayout } from '../../components/ToolLayout';
+import { ToolLoading } from '../../components/ToolLoading';
 import { Button, Callout, RangeField } from '../../components/ui';
 import { Icon } from '../../components/Icon';
 import { useImageSource } from '../../hooks/useImageSource';
@@ -154,8 +155,22 @@ export function ConvertPage() {
     );
   }
 
+  // See the note in CompressPage: `meta` is null until the decode resolves, and
+  // the lines below this guard read it.
+  if (source.status === 'loading') {
+    return (
+      <ToolLoading
+        icon="convert"
+        title="Image Converter"
+        description="Move between image formats."
+        dropTitle="Drop an image to convert"
+        onFiles={onFiles}
+      />
+    );
+  }
+
   const meta = source.meta!;
-  const busy = source.status === 'loading' || tool.state.phase === 'processing';
+  const busy = tool.state.phase === 'processing';
 
   return (
     <div className="page container">
@@ -285,7 +300,7 @@ export function ConvertPage() {
                   <div className="stage__busy">
                     <div className="stage__busy-inner">
                       <span className="spinner spinner--lg" />
-                      <span>{source.status === 'loading' ? 'Opening image…' : 'Converting…'}</span>
+                      <span>Converting…</span>
                     </div>
                   </div>
                 ) : null}

@@ -17,6 +17,7 @@ import { ResultPanel } from '../../components/ResultPanel';
 import { ImageMetaPanel } from '../../components/ImageMetaPanel';
 import { FormatSelect } from '../../components/FormatSelect';
 import { SourceWarning, ToolError, ToolFooter, ToolLayout } from '../../components/ToolLayout';
+import { ToolLoading } from '../../components/ToolLoading';
 import { Button, Callout, RangeField } from '../../components/ui';
 import { useImageSource } from '../../hooks/useImageSource';
 import { useToolController } from '../../hooks/useToolController';
@@ -343,8 +344,22 @@ export function CropPage() {
     );
   }
 
+  // See the note in CompressPage: `imageMeta` is null until the decode
+  // resolves, and the lines below this guard read it.
+  if (source.status === 'loading') {
+    return (
+      <ToolLoading
+        icon="crop"
+        title="Crop Image"
+        description="Frame and trim an image."
+        dropTitle="Drop an image to crop"
+        onFiles={onFiles}
+      />
+    );
+  }
+
   const imageMeta = source.meta!;
-  const busy = source.status === 'loading' || tool.state.phase === 'processing';
+  const busy = tool.state.phase === 'processing';
   const outputSize = {
     width: Math.round(crop.width * scale),
     height: Math.round(crop.height * scale),
@@ -550,7 +565,7 @@ export function CropPage() {
                   <div className="stage__busy">
                     <div className="stage__busy-inner">
                       <span className="spinner spinner--lg" />
-                      <span>{source.status === 'loading' ? 'Opening image…' : 'Cropping…'}</span>
+                      <span>Cropping…</span>
                     </div>
                   </div>
                 ) : null}

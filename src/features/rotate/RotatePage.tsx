@@ -13,6 +13,7 @@ import { ResultPanel } from '../../components/ResultPanel';
 import { ImageMetaPanel } from '../../components/ImageMetaPanel';
 import { FormatSelect } from '../../components/FormatSelect';
 import { SourceWarning, ToolError, ToolFooter, ToolLayout } from '../../components/ToolLayout';
+import { ToolLoading } from '../../components/ToolLoading';
 import { Button, Callout, RangeField } from '../../components/ui';
 import { Icon } from '../../components/Icon';
 import { useImageSource } from '../../hooks/useImageSource';
@@ -146,8 +147,22 @@ export function RotatePage() {
     );
   }
 
+  // See the note in CompressPage: `imageMeta` is null until the decode
+  // resolves, and the lines below this guard read it.
+  if (source.status === 'loading') {
+    return (
+      <ToolLoading
+        icon="rotate"
+        title="Rotate & Flip"
+        description="Rotate or mirror an image."
+        dropTitle="Drop an image to rotate"
+        onFiles={onFiles}
+      />
+    );
+  }
+
   const imageMeta = source.meta!;
-  const busy = source.status === 'loading' || tool.state.phase === 'processing';
+  const busy = tool.state.phase === 'processing';
   const swapped = transform.rotation === 90 || transform.rotation === 270;
   const previewWidth = swapped ? imageMeta.height : imageMeta.width;
   const previewHeight = swapped ? imageMeta.width : imageMeta.height;
@@ -327,7 +342,7 @@ export function RotatePage() {
                 <div className="stage__busy">
                   <div className="stage__busy-inner">
                     <span className="spinner spinner--lg" />
-                    <span>{source.status === 'loading' ? 'Opening image…' : 'Applying…'}</span>
+                    <span>Applying…</span>
                   </div>
                 </div>
               ) : null}
