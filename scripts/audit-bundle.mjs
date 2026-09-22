@@ -196,6 +196,38 @@ if (githubUrl && !bundle.includes(githubUrl)) {
   pass(`the configured repository URL is present verbatim`);
 }
 
+// Social-card images must be absolute URLs. A scraper reading the page has no
+// base to resolve `./og-image.png` against, so a relative path silently
+// produces a preview with no image. When no origin was configured the tags stay
+// relative — that is a deliberate "we do not know where this is deployed"
+// rather than a bug — but when one *was* configured the tags must have been
+// rewritten to use it.
+const canonicalOrigin = (process.env.VITE_CANONICAL_ORIGIN ?? '').trim();
+const documentCode = readFileSync(join(DIST, 'index.html'), 'utf8');
+const socialTags = [
+  ...documentCode.matchAll(/<meta (?:property|name)="(og:image|twitter:image)" content="([^"]*)"/g),
+];
+if (socialTags.length === 0) {
+  fail('no og:image / twitter:image tags found in index.html');
+} else if (!canonicalOrigin) {
+  const relative = socialTags.filter(([, , content]) => !/^https?:\/\//.test(content));
+  if (relative.length > 0) {
+    warn(
+      `${relative.length} social image tag(s) are relative — set the CANONICAL_ORIGIN repository variable so link previews work`,
+    );
+  }
+} else {
+  const base = `${canonicalOrigin.replace(/\/$/, '')}/`;
+  const notAbsolute = socialTags.filter(([, , content]) => !content.startsWith(base));
+  if (notAbsolute.length > 0) {
+    fail(
+      `social image tag(s) are not absolute under ${base}: ${notAbsolute.map(([, , c]) => c).join(', ')}`,
+    );
+  } else {
+    pass(`social image tags are absolute under ${base}`);
+  }
+}
+
 /* ------------------------------------------------------------ shipped assets */
 
 console.log('\nAssets');
