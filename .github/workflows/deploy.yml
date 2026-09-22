@@ -68,6 +68,17 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Creates the Pages site if it does not exist yet, so a fresh fork or
+          # a repository that has just been switched to public deploys on the
+          # first run instead of needing someone to click through Settings.
+          #
+          # Note: GitHub Pages is only available for private repositories on a
+          # paid plan. On the Free plan the repository has to be public, or this
+          # step fails with "Your current plan does not support GitHub Pages for
+          # this repository." That is an account-level restriction — there is no
+          # setting that works around it.
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
